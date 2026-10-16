@@ -1,4 +1,4 @@
-import { formatCurrency } from '@/lib/currency'
+import { formatAmount, formatCurrency } from '@/lib/currency'
 
 describe('formatCurrency', () => {
   it('adds the peso sign, comma separators, and two decimals', () => {
@@ -20,5 +20,12 @@ describe('formatCurrency', () => {
 
   it('formats negative amounts', () => {
     expect(formatCurrency(-95)).toBe('-₱95.00')
+  })
+})
+
+describe('formatAmount', () => {
+  it('formats receipt amounts without the peso sign', () => {
+    expect(formatAmount(40)).toBe('40.00')
+    expect(formatAmount(1250.5)).toBe('1,250.50')
   })
 })
