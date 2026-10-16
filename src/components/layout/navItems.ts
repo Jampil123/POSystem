@@ -20,7 +20,8 @@ export type NavItem = {
 }
 
 // Menu order follows section 5 of the UI guide.
-// adminOnly is used for hiding items by role in Phase 2.
+// adminOnly pages are hidden from cashiers and blocked for them by RequireAuth
+// (see src/features/auth/utils/roleAccess.ts).
 export const navItems: NavItem[] = [
   { label: 'POS', path: '/pos', icon: ShoppingCart, adminOnly: false, inBottomNav: true },
   { label: 'Products', path: '/products', icon: Package, adminOnly: true, inBottomNav: true },

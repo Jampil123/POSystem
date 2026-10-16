@@ -1,8 +1,12 @@
 import { NavLink } from 'react-router'
-import { navItems } from '@/components/layout/navItems'
+import { useRole } from '@/features/auth/hooks/useRole'
+import { getNavItemsForRole } from '@/features/auth/utils/roleAccess'
 import { cn } from '@/lib/utils'
 
 export function Sidebar() {
+  const { role } = useRole()
+  const items = role ? getNavItemsForRole(role) : []
+
   return (
     <aside className="sticky top-0 hidden h-dvh w-20 shrink-0 flex-col border-r border-border bg-card md:flex xl:w-60">
       <div className="flex h-16 items-center gap-2 border-b border-border px-4 max-xl:justify-center">
@@ -11,7 +15,7 @@ export function Sidebar() {
       </div>
 
       <nav aria-label="Main menu" className="flex flex-col gap-1 overflow-y-auto p-2">
-        {navItems.map(({ label, path, icon: Icon }) => (
+        {items.map(({ label, path, icon: Icon }) => (
           <NavLink
             key={path}
             to={path}

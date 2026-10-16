@@ -1,6 +1,5 @@
 import { MoreHorizontal } from 'lucide-react'
 import { NavLink, useLocation } from 'react-router'
-import { navItems } from '@/components/layout/navItems'
 import {
   Sheet,
   SheetClose,
@@ -9,17 +8,21 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import { useRole } from '@/features/auth/hooks/useRole'
+import { getNavItemsForRole } from '@/features/auth/utils/roleAccess'
 import { cn } from '@/lib/utils'
-
-const mainItems = navItems.filter((item) => item.inBottomNav)
-const moreItems = navItems.filter((item) => !item.inBottomNav)
 
 const itemClass =
   'flex min-h-14 flex-1 flex-col items-center justify-center gap-1 text-xs font-medium focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none'
 
-// Phone-only navigation: POS, Products, Inventory, Transactions, More
+// Phone-only navigation.
+// Admin: POS, Products, Inventory, Transactions, More. Cashier: POS, Transactions, More.
 export function BottomNav() {
   const { pathname } = useLocation()
+  const { role } = useRole()
+  const items = role ? getNavItemsForRole(role) : []
+  const mainItems = items.filter((item) => item.inBottomNav)
+  const moreItems = items.filter((item) => !item.inBottomNav)
   const moreIsActive = moreItems.some((item) => pathname.startsWith(item.path))
 
   return (
