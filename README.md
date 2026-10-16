@@ -7,8 +7,14 @@ A web-based point of sale system for a small store.
 - Responsive: works on desktop, iPad or tablet, and mobile phones in both portrait and landscape.
 - Two user roles: Admin (owner) and Cashier.
 
+**Live app:** _add the Vercel address here after deploying, for example
+https://kuya-tata-pos.vercel.app_ · Version **1.0.0**
+
 Project documents:
 
+- [docs/user-manual.md](docs/user-manual.md) — step-by-step guide for the owner and cashiers
+- [docs/deployment-guide.md](docs/deployment-guide.md) — putting the system online, manual steps, backups
+- [docs/test-results.md](docs/test-results.md) — testing checklist results, bugs fixed, devices tested
 - [CLAUDE.md](CLAUDE.md) — rules for AI coding tasks
 - [docs/kuya-tata-pos-development-plan.md](docs/kuya-tata-pos-development-plan.md) — tools, folder structure, database, phases, conventions
 - [docs/kuya-tata-pos-ui-guide.md](docs/kuya-tata-pos-ui-guide.md) — colors, layout, screens, responsive design
@@ -73,9 +79,9 @@ Project documents:
 Migrations are in `supabase/migrations/`, sample data in `supabase/seed.sql`.
 
 ```
-npx supabase db push --include-seed   # apply new migrations (and sample data) to the linked project
+npx supabase db push                  # apply new migrations to the linked project (never with --include-seed on the live store)
 npm run db:types                      # regenerate src/types/database.ts
-npm run db:test                       # run the complete_sale SQL tests (nothing is saved)
+npm run db:test                       # run the SQL tests (nothing is saved; do not run after go-live, see the deployment guide)
 ```
 
 Run `npm run db:types` after every database change.
