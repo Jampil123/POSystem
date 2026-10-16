@@ -15,7 +15,7 @@ export default defineConfig({
       registerType: 'prompt',
       // Uses the existing public/manifest.webmanifest instead of generating one
       manifest: false,
-      includeAssets: ['icons/*.svg', 'icons/*.png'],
+      includeAssets: ['icons/*.png', 'brand/*.png'],
       workbox: {
         // The app shell is saved on the device, so it opens without internet
         // and shows the "No internet connection" screen instead of a browser error.

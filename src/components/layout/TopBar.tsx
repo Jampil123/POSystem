@@ -44,7 +44,13 @@ export function TopBar() {
     // The top padding keeps it below the iPhone notch when installed on the home screen.
     <header className="sticky top-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center justify-between gap-3 border-b border-border bg-card pt-[env(safe-area-inset-top)] pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))] short:h-[calc(3rem+env(safe-area-inset-top))]! md:h-[calc(4rem+env(safe-area-inset-top))] md:pr-[max(1.5rem,env(safe-area-inset-right))] md:pl-6">
       <div className="flex min-w-0 items-center gap-2">
-        <img src="/icons/logo.svg" alt="" className="size-8 md:hidden" />
+        <img
+          src="/brand/kuya-tata-logo-96.png"
+          alt=""
+          width={96}
+          height={96}
+          className="size-9 md:hidden"
+        />
         <span className="truncate text-lg font-semibold">{current?.label ?? 'Kuya Tata POS'}</span>
       </div>
 
