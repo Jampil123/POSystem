@@ -78,28 +78,37 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_pin_hash: string | null
           created_at: string
           full_name: string
           id: string
           is_active: boolean
+          pin_failed_attempts: number
+          pin_locked_until: string | null
           role: Database['public']['Enums']['user_role']
           updated_at: string
           username: string
         }
         Insert: {
+          approval_pin_hash?: string | null
           created_at?: string
           full_name: string
           id: string
           is_active?: boolean
+          pin_failed_attempts?: number
+          pin_locked_until?: string | null
           role?: Database['public']['Enums']['user_role']
           updated_at?: string
           username: string
         }
         Update: {
+          approval_pin_hash?: string | null
           created_at?: string
           full_name?: string
           id?: string
           is_active?: boolean
+          pin_failed_attempts?: number
+          pin_locked_until?: string | null
           role?: Database['public']['Enums']['user_role']
           updated_at?: string
           username?: string
@@ -114,6 +123,7 @@ export type Database = {
           product_name: string
           quantity: number
           sale_id: number
+          unit_cost: number | null
           unit_price: number
         }
         Insert: {
@@ -123,6 +133,7 @@ export type Database = {
           product_name: string
           quantity: number
           sale_id: number
+          unit_cost?: number | null
           unit_price: number
         }
         Update: {
@@ -132,6 +143,7 @@ export type Database = {
           product_name?: string
           quantity?: number
           sale_id?: number
+          unit_cost?: number | null
           unit_price?: number
         }
         Relationships: [
@@ -157,7 +169,9 @@ export type Database = {
           created_at: string
           id: number
           reason: string
+          requested_by: string | null
           sale_id: number
+          shift_id: number | null
           type: Database['public']['Enums']['void_type']
         }
         Insert: {
@@ -165,7 +179,9 @@ export type Database = {
           created_at?: string
           id?: never
           reason: string
+          requested_by?: string | null
           sale_id: number
+          shift_id?: number | null
           type: Database['public']['Enums']['void_type']
         }
         Update: {
@@ -173,7 +189,9 @@ export type Database = {
           created_at?: string
           id?: never
           reason?: string
+          requested_by?: string | null
           sale_id?: number
+          shift_id?: number | null
           type?: Database['public']['Enums']['void_type']
         }
         Relationships: [
@@ -185,10 +203,24 @@ export type Database = {
             referencedColumns: ['id']
           },
           {
+            foreignKeyName: 'sale_voids_requested_by_fkey'
+            columns: ['requested_by']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
             foreignKeyName: 'sale_voids_sale_id_fkey'
             columns: ['sale_id']
             isOneToOne: true
             referencedRelation: 'sales'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'sale_voids_shift_id_fkey'
+            columns: ['shift_id']
+            isOneToOne: false
+            referencedRelation: 'shifts'
             referencedColumns: ['id']
           },
         ]
@@ -501,6 +533,14 @@ export type Database = {
         }
         Returns: number
       }
+      check_admin_approval: {
+        Args: { p_pin: string; p_username: string }
+        Returns: Record<string, unknown>
+      }
+      check_report_range: {
+        Args: { p_from: string; p_to: string }
+        Returns: undefined
+      }
       close_shift: {
         Args: { p_actual_cash: number; p_shift_id: number }
         Returns: {
@@ -556,77 +596,103 @@ export type Database = {
         Returns: number
       }
       refund_sale: {
-        Args: { p_reason: string; p_sale_id: number }
+        Args: {
+          p_admin_pin: string
+          p_admin_username: string
+          p_reason: string
+          p_sale_id: number
+        }
+        Returns: Json
+      }
+      report_best_sellers: {
+        Args: { p_from: string; p_limit?: number; p_to: string }
         Returns: {
-          cash_received: number
-          cashier_id: string
-          change: number
-          created_at: string
-          discount: number
-          id: number
-          receipt_no: string
+          product_id: number
+          product_name: string
+          quantity: number
+          sales: number
+        }[]
+      }
+      report_daily_sales: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          day: string
+          total_sales: number
+          transaction_count: number
+        }[]
+      }
+      report_entries: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          entry_day: string
+          sale_id: number
+          sign: number
+        }[]
+      }
+      report_low_stock: {
+        Args: never
+        Returns: {
+          category_name: string
+          low_stock_level: number
+          product_id: number
+          product_name: string
+          stock_qty: number
+        }[]
+      }
+      report_shift_summary: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          actual_cash: number
+          cashier_name: string
+          closed_at: string
+          difference: number
+          expected_cash: number
+          opened_at: string
           shift_id: number
-          status: Database['public']['Enums']['sale_status']
-          subtotal: number
-          total: number
-          vat_amount: number
-        }
-        SetofOptions: {
-          from: '*'
-          to: 'sales'
-          isOneToOne: true
-          isSetofReturn: false
-        }
+          starting_cash: number
+        }[]
+      }
+      report_summary: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          average_sale: number
+          gross_profit: number
+          items_sold: number
+          low_stock_count: number
+          refunds: number
+          sales_without_cost: number
+          total_sales: number
+          transaction_count: number
+        }[]
       }
       reverse_sale: {
         Args: {
+          p_admin_pin: string
+          p_admin_username: string
           p_reason: string
           p_sale_id: number
           p_type: Database['public']['Enums']['void_type']
         }
+        Returns: Json
+      }
+      set_approval_pin: { Args: { p_pin: string }; Returns: undefined }
+      shift_cash_summary: {
+        Args: { p_shift_id: number }
         Returns: {
-          cash_received: number
-          cashier_id: string
-          change: number
-          created_at: string
-          discount: number
-          id: number
-          receipt_no: string
-          shift_id: number
-          status: Database['public']['Enums']['sale_status']
-          subtotal: number
-          total: number
-          vat_amount: number
-        }
-        SetofOptions: {
-          from: '*'
-          to: 'sales'
-          isOneToOne: true
-          isSetofReturn: false
-        }
+          cash_sales: number
+          expected_cash: number
+          refunds: number
+          starting_cash: number
+        }[]
       }
       void_sale: {
-        Args: { p_reason: string; p_sale_id: number }
-        Returns: {
-          cash_received: number
-          cashier_id: string
-          change: number
-          created_at: string
-          discount: number
-          id: number
-          receipt_no: string
-          shift_id: number
-          status: Database['public']['Enums']['sale_status']
-          subtotal: number
-          total: number
-          vat_amount: number
+        Args: {
+          p_admin_pin: string
+          p_admin_username: string
+          p_reason: string
+          p_sale_id: number
         }
-        SetofOptions: {
-          from: '*'
-          to: 'sales'
-          isOneToOne: true
-          isSetofReturn: false
-        }
+        Returns: Json
       }
     }
     Enums: {
