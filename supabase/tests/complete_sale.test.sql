@@ -1,10 +1,13 @@
--- Tests for complete_sale: deducts stock, rejects short cash, rejects out-of-stock items.
+-- Tests for the database functions:
+-- - complete_sale: deducts stock, rejects short cash, rejects out-of-stock items
+-- - record_stock_in: increases stock and adds a movement
+-- - adjust_stock: rejects negative stock and requires a reason
 --
 -- How to run (no Docker needed):
---   npx supabase db query --linked -f supabase/tests/complete_sale.test.sql
+--   npm run db:test
 -- or paste this file into the Supabase dashboard SQL Editor and click Run.
 --
--- The test data (a test cashier, shift, category, and products) is created
+-- The test data (a test cashier and admin, shift, category, and products) is created
 -- inside a block that is always undone at the end, so nothing is saved.
 -- The result is a table with one row per test: PASS or FAIL with the reason.
 
@@ -16,6 +19,7 @@ declare
   v_tests text[] := '{}';
   v_results text[] := '{}';
   v_user_id uuid := gen_random_uuid();
+  v_admin_id uuid := gen_random_uuid();
   v_username text := 'zz_test_' || left(replace(gen_random_uuid()::text, '-', ''), 12);
   v_category_id bigint;
   v_product_id bigint;
@@ -126,6 +130,86 @@ begin
     v_results := v_results || case
       when v_error ilike '%not enough stock%' and v_stock = 7 then 'PASS'
       else format('FAIL: error was "%s", stock is %s', coalesce(v_error, 'none, sale was saved'), v_stock)
+    end;
+
+    -- Stock tests run as a test admin
+    insert into auth.users (id, email, raw_user_meta_data)
+    values (
+      v_admin_id,
+      v_username || '_admin@kuyatata.local',
+      jsonb_build_object('username', v_username || '_admin', 'full_name', 'Test Admin')
+    );
+    update public.profiles set role = 'admin' where id = v_admin_id;
+
+    perform set_config(
+      'request.jwt.claims',
+      jsonb_build_object('sub', v_admin_id, 'role', 'authenticated')::text,
+      true
+    );
+
+    -- Test 5: record_stock_in increases stock and adds a movement
+    perform public.record_stock_in(
+      jsonb_build_array(
+        jsonb_build_object('product_id', v_product_id, 'quantity', 5, 'unit_cost', 20.00)
+      ),
+      'Test Supplier'
+    );
+
+    select stock_qty into v_stock from public.products where id = v_product_id;
+    select count(*) into v_movements
+    from public.stock_movements
+    where product_id = v_product_id and type = 'stock_in' and quantity_change = 5;
+
+    v_tests := v_tests || 'record_stock_in increases stock (7 + 5 = 12) and adds a movement'::text;
+    v_results := v_results || case
+      when v_stock = 12 and v_movements = 1 then 'PASS'
+      else format('FAIL: stock is %s, stock in movements found: %s', v_stock, v_movements)
+    end;
+
+    -- Test 6: adjust_stock rejects a change that would make stock negative
+    v_error := null;
+    begin
+      perform public.adjust_stock(v_product_id, -13, 'Damaged'); -- only 12 left
+    exception when others then
+      v_error := sqlerrm;
+    end;
+
+    select stock_qty into v_stock from public.products where id = v_product_id;
+
+    v_tests := v_tests || 'adjust_stock rejects a negative stock result'::text;
+    v_results := v_results || case
+      when v_error ilike '%cannot remove more than the current stock%' and v_stock = 12 then 'PASS'
+      else format('FAIL: error was "%s", stock is %s', coalesce(v_error, 'none, adjustment was saved'), v_stock)
+    end;
+
+    -- Test 7: adjust_stock requires a reason
+    v_error := null;
+    begin
+      perform public.adjust_stock(v_product_id, -1, '   ');
+    exception when others then
+      v_error := sqlerrm;
+    end;
+
+    select stock_qty into v_stock from public.products where id = v_product_id;
+
+    v_tests := v_tests || 'adjust_stock requires a reason'::text;
+    v_results := v_results || case
+      when v_error ilike '%reason%' and v_stock = 12 then 'PASS'
+      else format('FAIL: error was "%s", stock is %s', coalesce(v_error, 'none, adjustment was saved'), v_stock)
+    end;
+
+    -- Test 8: a valid adjustment changes stock and adds a movement
+    perform public.adjust_stock(v_product_id, -2, 'Damaged');
+
+    select stock_qty into v_stock from public.products where id = v_product_id;
+    select count(*) into v_movements
+    from public.stock_movements
+    where product_id = v_product_id and type = 'adjustment' and quantity_change = -2;
+
+    v_tests := v_tests || 'adjust_stock changes stock (12 - 2 = 10) and adds a movement'::text;
+    v_results := v_results || case
+      when v_stock = 10 and v_movements = 1 then 'PASS'
+      else format('FAIL: stock is %s, adjustment movements found: %s', v_stock, v_movements)
     end;
 
     raise exception 'test rollback';
