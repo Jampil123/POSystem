@@ -2,6 +2,8 @@
 -- - complete_sale: deducts stock, rejects short cash, rejects out-of-stock items
 -- - record_stock_in: increases stock and adds a movement
 -- - adjust_stock: rejects negative stock and requires a reason
+-- - complete_sale without an open shift is rejected
+-- - close_shift: computes the expected cash and the difference
 --
 -- How to run (no Docker needed):
 --   npm run db:test
@@ -27,6 +29,7 @@ declare
   v_stock integer;
   v_movements integer;
   v_error text;
+  v_shift public.shifts;
 begin
   -- Everything in this inner block is undone by the final 'test rollback' error.
   -- Variables (the test results) keep their values.
@@ -46,8 +49,6 @@ begin
       true
     );
 
-    insert into public.shifts (cashier_id, starting_cash) values (v_user_id, 500.00);
-
     insert into public.categories (name)
     values (v_username || ' category')
     returning id into v_category_id;
@@ -59,6 +60,27 @@ begin
     insert into public.products (category_id, name, selling_price, stock_qty)
     values (v_category_id, 'Test Empty Item', 30.00, 0)
     returning id into v_empty_product_id;
+
+    -- Test 0: a sale is rejected while the cashier has no open shift
+    v_error := null;
+    begin
+      perform public.complete_sale(
+        jsonb_build_array(jsonb_build_object('product_id', v_product_id, 'quantity', 1)),
+        100.00
+      );
+    exception when others then
+      v_error := sqlerrm;
+    end;
+
+    select stock_qty into v_stock from public.products where id = v_product_id;
+
+    v_tests := v_tests || 'complete_sale is rejected without an open shift'::text;
+    v_results := v_results || case
+      when v_error ilike '%open a shift%' and v_stock = 10 then 'PASS'
+      else format('FAIL: error was "%s", stock is %s', coalesce(v_error, 'none, sale was saved'), v_stock)
+    end;
+
+    insert into public.shifts (cashier_id, starting_cash) values (v_user_id, 500.00);
 
     -- Test 1: a completed sale deducts stock and records a stock movement
     perform public.complete_sale(
@@ -210,6 +232,31 @@ begin
     v_results := v_results || case
       when v_stock = 10 and v_movements = 1 then 'PASS'
       else format('FAIL: stock is %s, adjustment movements found: %s', v_stock, v_movements)
+    end;
+
+    -- Test 9: close_shift computes the expected cash and the difference.
+    -- The cashier's shift started with 500.00 and has one sale of 75.00 (Test 1),
+    -- so 575.00 is expected; counting 570.00 means the drawer is 5.00 short.
+    perform set_config(
+      'request.jwt.claims',
+      jsonb_build_object('sub', v_user_id, 'role', 'authenticated')::text,
+      true
+    );
+
+    select * into v_shift
+    from public.close_shift(
+      (select id from public.shifts where cashier_id = v_user_id and closed_at is null),
+      570.00
+    );
+
+    v_tests := v_tests || 'close_shift computes expected cash (575.00) and difference (-5.00)'::text;
+    v_results := v_results || case
+      when v_shift.expected_cash = 575.00 and v_shift.difference = -5.00 and v_shift.closed_at is not null
+        then 'PASS'
+      else format(
+        'FAIL: expected cash %s, difference %s, closed at %s',
+        v_shift.expected_cash, v_shift.difference, v_shift.closed_at
+      )
     end;
 
     raise exception 'test rollback';
