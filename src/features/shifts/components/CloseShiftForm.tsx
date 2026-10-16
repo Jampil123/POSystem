@@ -17,11 +17,11 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { computeCashDifference, computeShiftCash } from '@/features/pos/utils/computeShiftCash'
+import { computeCashDifference } from '@/features/pos/utils/computeShiftCash'
 import { parseAmount } from '@/features/pos/utils/parseAmount'
 import type { Shift } from '@/features/shifts/api'
 import { CashDifference } from '@/features/shifts/components/CashDifference'
-import { useCloseShift, useShiftSales } from '@/features/shifts/hooks/useShifts'
+import { useCloseShift, useShiftCashSummary } from '@/features/shifts/hooks/useShifts'
 import {
   closeShiftSchema,
   type CloseShiftInput,
@@ -32,7 +32,7 @@ import { errorMessage } from '@/lib/errors'
 
 // UI guide 6.7: starting cash, cash sales, refunds, expected cash, and the cash counted.
 export function CloseShiftForm({ shift }: { shift: Shift }) {
-  const sales = useShiftSales(shift.id)
+  const summary = useShiftCashSummary(shift.id)
   const closeShift = useCloseShift()
   // Values waiting for the "Close shift?" confirmation.
   const [pending, setPending] = useState<CloseShiftValues | null>(null)
@@ -43,17 +43,17 @@ export function CloseShiftForm({ shift }: { shift: Shift }) {
   })
   const actualCashText = useWatch({ control: form.control, name: 'actual_cash' })
 
-  if (sales.isPending) return <ListSkeleton rows={4} />
-  if (sales.isError) {
+  if (summary.isPending) return <ListSkeleton rows={4} />
+  if (summary.isError) {
     return (
       <ErrorState
-        message="Could not load the shift's sales."
-        onRetry={() => void sales.refetch()}
+        message="Could not load the shift's cash summary."
+        onRetry={() => void summary.refetch()}
       />
     )
   }
 
-  const cash = computeShiftCash(shift.starting_cash, sales.data)
+  const cash = summary.data
   const actualCash = parseAmount(actualCashText)
   const difference =
     actualCash === null ? null : computeCashDifference(actualCash, cash.expectedCash)

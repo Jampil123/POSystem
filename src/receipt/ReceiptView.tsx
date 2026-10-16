@@ -1,7 +1,7 @@
-import { format } from 'date-fns'
 import type { ReceiptSale } from '@/features/pos/api'
 import type { StoreSettings } from '@/features/settings/api'
 import { formatAmount } from '@/lib/currency'
+import { formatManilaDateTime } from '@/lib/manilaTime'
 import './receipt.css'
 
 export type PaperWidth = 58 | 80
@@ -12,10 +12,20 @@ type ReceiptViewProps = {
   sale: ReceiptSale
   settings: StoreSettings
   paperWidth: PaperWidth
+  /** Adds a "REPRINT" label, for receipts printed again from Transactions. */
+  reprint?: boolean
 }
 
+const statusLabels = { completed: null, voided: 'VOIDED', refunded: 'REFUNDED' } as const
+
 // Receipt layout from section 9 of the UI guide: black monospace text, no colors or images.
-export default function ReceiptView({ sale, settings, paperWidth }: ReceiptViewProps) {
+export default function ReceiptView({
+  sale,
+  settings,
+  paperWidth,
+  reprint = false,
+}: ReceiptViewProps) {
+  const statusLabel = statusLabels[sale.status]
   // The footer from settings may already include the "not an official receipt" line.
   const footerHasNotice = settings.receipt_footer.toLowerCase().includes('not an official receipt')
 
@@ -27,9 +37,17 @@ export default function ReceiptView({ sale, settings, paperWidth }: ReceiptViewP
         {settings.contact_no && <p>{settings.contact_no}</p>}
       </div>
 
+      {(reprint || statusLabel) && (
+        <p className="receipt-center receipt-strong">
+          {[reprint && '*** REPRINT ***', statusLabel && `*** ${statusLabel} ***`]
+            .filter(Boolean)
+            .join(' ')}
+        </p>
+      )}
+
       <hr className="receipt-rule" />
       <p>Receipt #: {sale.receipt_no}</p>
-      <p>Date: {format(new Date(sale.created_at), 'MM/dd/yyyy hh:mm a')}</p>
+      <p>Date: {formatManilaDateTime(sale.created_at)}</p>
       <p>Cashier: {sale.cashier?.full_name}</p>
 
       <hr className="receipt-rule" />

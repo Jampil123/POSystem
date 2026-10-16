@@ -3,7 +3,7 @@ import { useAuth } from '@/features/auth/hooks/useAuth'
 import {
   closeShift,
   getCurrentShift,
-  getShiftSales,
+  getShiftCashSummary,
   listShifts,
   openShift,
 } from '@/features/shifts/api'
@@ -27,9 +27,12 @@ export function useOpenShift() {
   })
 }
 
-/** Sales of a shift, for the close shift summary. */
-export function useShiftSales(shiftId: number) {
-  return useQuery({ queryKey: shiftKeys.sales(shiftId), queryFn: () => getShiftSales(shiftId) })
+/** Starting cash, cash sales, refunds, and expected cash of a shift. */
+export function useShiftCashSummary(shiftId: number) {
+  return useQuery({
+    queryKey: shiftKeys.cash(shiftId),
+    queryFn: () => getShiftCashSummary(shiftId),
+  })
 }
 
 export function useCloseShift() {

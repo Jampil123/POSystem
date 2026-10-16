@@ -36,7 +36,7 @@ function receiptQuery(saleId: number) {
   return supabase
     .from('sales')
     .select(
-      'id, receipt_no, created_at, subtotal, discount, vat_amount, total, cash_received, change, status, cashier:profiles(full_name), items:sale_items(id, product_name, unit_price, quantity, line_total)',
+      'id, receipt_no, created_at, subtotal, discount, vat_amount, total, cash_received, change, status, cashier:profiles!sales_cashier_id_fkey(full_name), items:sale_items(id, product_name, unit_price, quantity, line_total)',
     )
     .eq('id', saleId)
     .single()

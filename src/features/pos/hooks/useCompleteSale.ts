@@ -13,6 +13,8 @@ export function useCompleteSale() {
     mutationFn: (input: CompleteSaleInput) => completeSale(input),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: shiftKeys.all })
+      void queryClient.invalidateQueries({ queryKey: ['transactions'] })
+      void queryClient.invalidateQueries({ queryKey: ['reports'] })
     },
     onSettled: () => queryClient.invalidateQueries({ queryKey: productKeys.all }),
   })

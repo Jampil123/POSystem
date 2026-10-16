@@ -32,9 +32,11 @@ type ReceiptDialogProps = {
   /** The sale to show; null closes the dialog. */
   saleId: number | null
   onClose: () => void
+  /** Printing again from Transactions: adds the "REPRINT" label. */
+  reprint?: boolean
 }
 
-export function ReceiptDialog({ saleId, onClose }: ReceiptDialogProps) {
+export function ReceiptDialog({ saleId, onClose, reprint = false }: ReceiptDialogProps) {
   const sale = useReceiptSale(saleId)
   const settings = useStoreSettings()
   const [paperWidth, setPaperWidth] = useState<PaperWidth>(savedPaperWidth)
@@ -54,7 +56,7 @@ export function ReceiptDialog({ saleId, onClose }: ReceiptDialogProps) {
     <Dialog open={saleId !== null} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="flex max-h-[90dvh] flex-col rounded-xl max-md:h-dvh max-md:max-h-dvh max-md:max-w-full max-md:rounded-none sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Receipt</DialogTitle>
+          <DialogTitle>{reprint ? 'Reprint receipt' : 'Receipt'}</DialogTitle>
           <DialogDescription>
             Print it with the receipt printer, or start the next sale.
           </DialogDescription>
@@ -88,7 +90,12 @@ export function ReceiptDialog({ saleId, onClose }: ReceiptDialogProps) {
           ) : (
             ready && (
               <div className="mx-auto w-fit shadow-sm">
-                <ReceiptView sale={sale.data} settings={settings.data} paperWidth={paperWidth} />
+                <ReceiptView
+                  sale={sale.data}
+                  settings={settings.data}
+                  paperWidth={paperWidth}
+                  reprint={reprint}
+                />
               </div>
             )
           )}
@@ -96,7 +103,7 @@ export function ReceiptDialog({ saleId, onClose }: ReceiptDialogProps) {
 
         <DialogFooter>
           <Button variant="outline" className="h-12" onClick={onClose}>
-            Next customer
+            {reprint ? 'Close' : 'Next customer'}
           </Button>
           <Button className="h-12" disabled={!ready} onClick={() => window.print()}>
             <Printer aria-hidden="true" />
@@ -111,7 +118,12 @@ export function ReceiptDialog({ saleId, onClose }: ReceiptDialogProps) {
         createPortal(
           <div className="receipt-print-root">
             <style>{`@page { size: ${paperWidth}mm auto; margin: 0; }`}</style>
-            <ReceiptView sale={sale.data} settings={settings.data} paperWidth={paperWidth} />
+            <ReceiptView
+              sale={sale.data}
+              settings={settings.data}
+              paperWidth={paperWidth}
+              reprint={reprint}
+            />
           </div>,
           document.body,
         )}

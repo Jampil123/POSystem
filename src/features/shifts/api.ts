@@ -1,5 +1,4 @@
 import type { PostgrestError, QueryData } from '@supabase/supabase-js'
-import type { ShiftSale } from '@/features/pos/utils/computeShiftCash'
 import type { Tables } from '@/types/database'
 import { supabase } from '@/lib/supabase'
 
@@ -32,14 +31,26 @@ export async function openShift(startingCash: number): Promise<Shift> {
   return data
 }
 
-/** Totals and statuses of the shift's sales, for the close shift summary. */
-export async function getShiftSales(shiftId: number): Promise<ShiftSale[]> {
-  const { data, error } = await supabase
-    .from('sales')
-    .select('total, status')
-    .eq('shift_id', shiftId)
-  if (error) throw new Error('Could not load the sales of this shift.')
-  return data
+export type ShiftCashSummary = {
+  startingCash: number
+  /** Sales made in the shift that were not voided. */
+  cashSales: number
+  /** Refunds paid out of this shift's drawer. */
+  refunds: number
+  /** Starting cash + cash sales − refunds. */
+  expectedCash: number
+}
+
+// Worked out by the database with the same formula close_shift uses.
+export async function getShiftCashSummary(shiftId: number): Promise<ShiftCashSummary> {
+  const { data, error } = await supabase.rpc('shift_cash_summary', { p_shift_id: shiftId }).single()
+  if (error) throw new Error('Could not load the cash summary of this shift.')
+  return {
+    startingCash: data.starting_cash,
+    cashSales: data.cash_sales,
+    refunds: data.refunds,
+    expectedCash: data.expected_cash,
+  }
 }
 
 function functionError(error: PostgrestError, fallback: string) {
@@ -60,7 +71,7 @@ function shiftsQuery() {
   return supabase
     .from('shifts')
     .select(
-      'id, opened_at, closed_at, starting_cash, expected_cash, actual_cash, difference, cashier:profiles(full_name)',
+      'id, opened_at, closed_at, starting_cash, expected_cash, actual_cash, difference, cashier:profiles!shifts_cashier_id_fkey(full_name)',
     )
     .order('opened_at', { ascending: false })
     .limit(100)
