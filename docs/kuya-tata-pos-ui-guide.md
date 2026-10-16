@@ -137,10 +137,19 @@ Touch rules for tablets and phones:
 
 ### 6.1 Login
 
-- Centered card on the light background.
-- Store name "Kuya Tata POS" at the top with a small yellow logo mark.
-- Username and password fields, one full-width yellow "Log in" button.
+- One white card on the light background, split in two:
+  - **Brand panel** (flat primary yellow, dark text, no gradient): the round Kuya Tata Sari-Sari Store
+    logo (`public/brand/kuya-tata-logo.png`), "Welcome back!", one line about starting the shift, and
+    three small step tiles: Log in → Open your shift → Start selling (the first tile white, the others
+    white at 50%).
+  - **Form panel** (white): "Log in" title, a short hint, username and password fields (the password
+    has a show/hide button), one full-width yellow "Log in" button, and "For Kuya Tata staff only"
+    under it. No sign-up: the owner adds users on the Users page.
+- Tablets and desktops: the two panels side by side. Phones: the brand panel on top (logo and
+  welcome only), the form below. Short screens (phones in landscape): smaller logo, no step tiles.
 - Error message in red below the form for wrong credentials.
+- The detailed logo is used on the login page only; the app keeps the small "KT" mark in the
+  sidebar, top bar, and app icons, where the full logo would be too small to read.
 
 ### 6.2 Open shift
 
