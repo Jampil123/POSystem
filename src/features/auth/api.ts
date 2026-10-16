@@ -37,10 +37,27 @@ export async function logOut(): Promise<void> {
   if (error) throw new Error('Could not log out. Please try again.')
 }
 
+// The approval PIN columns are not readable from the app, so the columns are listed.
+const PROFILE_COLUMNS = 'id, full_name, username, role, is_active, created_at, updated_at'
+
 export async function getProfile(userId: string): Promise<Profile> {
-  const { data, error } = await supabase.from('profiles').select('*').eq('id', userId).single()
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(PROFILE_COLUMNS)
+    .eq('id', userId)
+    .single()
   if (error) throw new Error('Could not load your account.')
   return data
+}
+
+// Admins set their own approval PIN for voids and refunds. It is saved as a hash.
+export async function setApprovalPin(pin: string): Promise<void> {
+  const { error } = await supabase.rpc('set_approval_pin', { p_pin: pin })
+  if (error) {
+    throw new Error(
+      error.code === 'P0001' ? error.message : 'Could not save the PIN. Please try again.',
+    )
+  }
 }
 
 // Calls onChange with the current session right away, then on every login and logout.

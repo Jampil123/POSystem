@@ -1,4 +1,5 @@
-import { ChevronDown, CircleUserRound, LogOut } from 'lucide-react'
+import { useState } from 'react'
+import { ChevronDown, CircleUserRound, KeyRound, LogOut } from 'lucide-react'
 import { useLocation } from 'react-router'
 import { toast } from 'sonner'
 import { navItems } from '@/components/layout/navItems'
@@ -11,6 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { SetApprovalPinDialog } from '@/features/auth/components/SetApprovalPinDialog'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { ShiftStatus } from '@/features/shifts/components/ShiftStatus'
 
@@ -19,6 +21,7 @@ const roleLabels = { admin: 'Admin', cashier: 'Cashier' } as const
 export function TopBar() {
   const { pathname } = useLocation()
   const { profile, logOut } = useAuth()
+  const [pinDialogOpen, setPinDialogOpen] = useState(false)
   const current = navItems.find((item) => pathname.startsWith(item.path))
 
   async function handleLogOut() {
@@ -63,6 +66,12 @@ export function TopBar() {
                 </span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              {profile.role === 'admin' && (
+                <DropdownMenuItem className="min-h-12" onSelect={() => setPinDialogOpen(true)}>
+                  <KeyRound aria-hidden="true" />
+                  Set approval PIN
+                </DropdownMenuItem>
+              )}
               <DropdownMenuItem className="min-h-12" onSelect={() => void handleLogOut()}>
                 <LogOut aria-hidden="true" />
                 Log out
@@ -71,6 +80,8 @@ export function TopBar() {
           </DropdownMenu>
         )}
       </div>
+
+      <SetApprovalPinDialog open={pinDialogOpen} onOpenChange={setPinDialogOpen} />
     </header>
   )
 }
