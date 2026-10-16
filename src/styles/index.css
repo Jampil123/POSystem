@@ -1,0 +1,95 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+
+/*
+ * Kuya Tata POS theme — colors from section 2 of the UI guide.
+ * Values are the guide's hex colors so they are easy to compare.
+ * Do not add new colors here without updating the UI guide.
+ */
+:root {
+  --background: #fafaf9; /* Background */
+  --foreground: #1c1917; /* Text primary */
+  --card: #ffffff; /* Surface */
+  --card-foreground: #1c1917;
+  --popover: #ffffff;
+  --popover-foreground: #1c1917;
+  --primary: #facc15; /* Primary yellow */
+  --primary-foreground: #1c1917; /* Text on yellow is always dark */
+  --primary-hover: #eab308; /* Primary hover / pressed */
+  --primary-strong: #a16207; /* Icons and links on white */
+  --secondary: #fef9c3; /* Primary tint */
+  --secondary-foreground: #854d0e;
+  --muted: #f5f5f4;
+  --muted-foreground: #78716c; /* Text secondary */
+  --accent: #fef9c3; /* Primary tint: highlighted rows, active menu */
+  --accent-foreground: #1c1917;
+  --destructive: #dc2626; /* Danger */
+  --destructive-foreground: #ffffff;
+  --success: #16a34a;
+  --warning: #d97706;
+  --border: #e7e5e4;
+  --input: #e7e5e4;
+  --ring: #eab308; /* Yellow focus ring */
+  --radius: 0.5rem; /* 8px for buttons, inputs, cards */
+
+  /* Charts: bars in primary yellow (UI guide 6.8) */
+  --chart-1: #facc15;
+}
+
+@theme inline {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-strong: var(--primary-strong);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px); /* 12px for dialogs */
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+
+  /* Prices, quantities, and totals line up in columns (UI guide section 3) */
+  .tabular-nums,
+  table,
+  input[inputmode='decimal'],
+  input[type='number'] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Disabled buttons: lighter with a not-allowed cursor (UI guide section 8) */
+  button:disabled,
+  [role='button'][aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+}

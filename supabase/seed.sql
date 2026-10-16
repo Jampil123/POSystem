@@ -1,0 +1,2 @@
+-- Sample data for local development: categories, products, and admin and
+-- cashier accounts. Filled in Phase 2 after the tables are created.
