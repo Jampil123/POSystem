@@ -1,1 +1,82 @@
-/* Print-only receipt styles for 58mm / 80mm thermal printers (Phase 4). */
+/*
+ * Receipt for 58mm / 80mm thermal printers (UI guide section 9).
+ * Black text only, monospace, no colors or images.
+ */
+
+.receipt {
+  box-sizing: border-box;
+  padding: 3mm;
+  background: #fff;
+  color: #000;
+  font-family: ui-monospace, 'Courier New', Courier, monospace;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.receipt[data-width='58'] {
+  width: 58mm;
+}
+
+.receipt[data-width='80'] {
+  width: 80mm;
+  font-size: 12px;
+}
+
+.receipt p {
+  margin: 0;
+}
+
+.receipt-center {
+  text-align: center;
+}
+
+.receipt-store {
+  font-weight: 700;
+}
+
+.receipt-rule {
+  margin: 2mm 0;
+  border: 0;
+  border-top: 1px dashed #000;
+}
+
+/* Item | Qty | Amount */
+.receipt-items {
+  display: grid;
+  grid-template-columns: 1fr 4ch 10ch;
+  gap: 1ch;
+}
+
+.receipt-head {
+  font-weight: 700;
+}
+
+.receipt-right {
+  text-align: right;
+}
+
+.receipt-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1ch;
+}
+
+.receipt-strong {
+  font-weight: 700;
+}
+
+/* The copy used for printing is hidden on screen. */
+.receipt-print-root {
+  display: none;
+}
+
+@media print {
+  /* Print only the receipt, nothing else on the page. */
+  body > :not(.receipt-print-root) {
+    display: none !important;
+  }
+
+  .receipt-print-root {
+    display: block;
+  }
+}

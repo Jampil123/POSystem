@@ -2,6 +2,7 @@ import { useCallback, useContext } from 'react'
 import { skipToken, useQuery, useQueryClient } from '@tanstack/react-query'
 import { getProfile, logOut as logOutRequest } from '@/features/auth/api'
 import { AuthContext } from '@/features/auth/authContext'
+import { useCartStore } from '@/features/pos/store/cartStore'
 
 export const profileQueryKey = (userId: string | undefined) => ['profile', userId] as const
 
@@ -35,10 +36,11 @@ export function useAuth() {
   else if (!profile) status = 'loading'
   else status = profile.is_active ? 'active' : 'inactive'
 
-  // Clears all cached data so the next user never sees the previous user's data.
+  // Clears all cached data and the cart so the next user never sees the previous user's data.
   const logOut = useCallback(async () => {
     await logOutRequest()
     queryClient.clear()
+    useCartStore.getState().clearCart()
   }, [queryClient])
 
   return {
