@@ -17,17 +17,6 @@ import { useStoreSettings } from '@/features/settings/hooks/useStoreSettings'
 import ReceiptView, { type PaperWidth } from '@/receipt/ReceiptView'
 import { cn } from '@/lib/utils'
 
-const PAPER_WIDTH_KEY = 'kuya-tata-receipt-width'
-
-// The printer's paper width is remembered on this device (a convenience only).
-function savedPaperWidth(): PaperWidth {
-  try {
-    return localStorage.getItem(PAPER_WIDTH_KEY) === '80' ? 80 : 58
-  } catch {
-    return 58
-  }
-}
-
 type ReceiptDialogProps = {
   /** The sale to show; null closes the dialog. */
   saleId: number | null
@@ -39,16 +28,11 @@ type ReceiptDialogProps = {
 export function ReceiptDialog({ saleId, onClose, reprint = false }: ReceiptDialogProps) {
   const sale = useReceiptSale(saleId)
   const settings = useStoreSettings()
-  const [paperWidth, setPaperWidth] = useState<PaperWidth>(savedPaperWidth)
-
-  function choosePaperWidth(width: PaperWidth) {
-    setPaperWidth(width)
-    try {
-      localStorage.setItem(PAPER_WIDTH_KEY, String(width))
-    } catch {
-      // Not saved; the choice still works until the page is closed.
-    }
-  }
+  // The default width comes from Settings; the buttons change it for this receipt only.
+  const [chosenWidth, setChosenWidth] = useState<PaperWidth | null>(null)
+  const paperWidth: PaperWidth =
+    chosenWidth ?? (settings.data?.receipt_paper_width === 80 ? 80 : 58)
+  const choosePaperWidth = setChosenWidth
 
   const ready = sale.data && settings.data
 

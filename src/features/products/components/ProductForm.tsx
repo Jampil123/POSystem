@@ -30,6 +30,7 @@ import {
   type ProductListItem,
 } from '@/features/products/api'
 import { useSaveProduct } from '@/features/products/hooks/useSaveProduct'
+import { useStoreSettings } from '@/features/settings/hooks/useStoreSettings'
 import {
   emptyProductForm,
   isPriceBelowCost,
@@ -60,12 +61,21 @@ function toFormInput(product: ProductListItem): ProductFormInput {
 
 export function ProductForm({ product, categories, onDone }: ProductFormProps) {
   const saveProduct = useSaveProduct()
+  const settings = useStoreSettings()
   // Values waiting for the "Deactivate product?" confirmation.
   const [pendingValues, setPendingValues] = useState<ProductFormValues | null>(null)
 
   const form = useForm<ProductFormInput, unknown, ProductFormValues>({
     resolver: zodResolver(productSchema),
-    defaultValues: product ? toFormInput(product) : emptyProductForm,
+    // New products start with the default low-stock level from Settings.
+    defaultValues: product
+      ? toFormInput(product)
+      : {
+          ...emptyProductForm,
+          low_stock_level: String(
+            settings.data?.default_low_stock_level ?? emptyProductForm.low_stock_level,
+          ),
+        },
   })
   const [costPrice, sellingPrice] = useWatch({
     control: form.control,
