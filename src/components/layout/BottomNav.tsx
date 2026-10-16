@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/sheet'
 import { useRole } from '@/features/auth/hooks/useRole'
 import { getNavItemsForRole } from '@/features/auth/utils/roleAccess'
+import { useKeyboardOpen } from '@/hooks/useKeyboardOpen'
 import { cn } from '@/lib/utils'
 
 const itemClass =
@@ -24,11 +25,15 @@ export function BottomNav() {
   const mainItems = items.filter((item) => item.inBottomNav)
   const moreItems = items.filter((item) => !item.inBottomNav)
   const moreIsActive = moreItems.some((item) => pathname.startsWith(item.path))
+  // Hidden while typing, so it never covers the field above the on-screen keyboard.
+  const keyboardOpen = useKeyboardOpen()
+
+  if (keyboardOpen) return null
 
   return (
     <nav
       aria-label="Main menu"
-      className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-card pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 flex border-t border-border bg-card pr-[env(safe-area-inset-right)] pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] md:hidden"
     >
       {mainItems.map(({ label, path, icon: Icon }) => (
         <NavLink

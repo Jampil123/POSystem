@@ -108,6 +108,40 @@ Usernames may use 3–30 lowercase letters, numbers, dots, dashes, or underscore
 Turn off public sign-ups in **Authentication → Sign In / Providers → Allow new users to sign up**,
 so only the owner can create accounts.
 
+After the first admin exists, add every other user on the **Users** page. It needs the
+`admin-users` Edge Function (below).
+
+## Edge Function: admin-users
+
+Adding users, turning them off or on, and resetting passwords and approval PINs need the Supabase
+service role key. That key must never be in the app, so the **Users** page calls the Edge Function
+in `supabase/functions/admin-users/`, which runs on Supabase's servers. Supabase gives every Edge
+Function the key automatically; nothing is added to `.env`.
+
+The function only accepts a logged-in, active admin. It also refuses to let an admin deactivate or
+demote their own account, or remove the last active admin (the database checks this too).
+
+Deploy it (again after every change to `supabase/functions/`):
+
+```
+npx supabase functions deploy admin-users --use-api
+```
+
+`--use-api` builds the function on Supabase's servers, so Docker is not needed. Gateway token
+checks are off for this function in `supabase/config.toml` because the function checks the login
+itself (`handler.ts`).
+
+## Install on a tablet or phone (PWA)
+
+Open the deployed app in the browser, then:
+
+- Android (Chrome): menu → **Add to Home screen** / **Install app**.
+- iPhone and iPad (Safari): Share → **Add to Home Screen**.
+
+The installed app opens full screen. Without internet it shows a "No internet connection" screen
+(sales cannot be saved offline in this version). When a new version is deployed, an
+"Update available" message appears with a **Reload** button.
+
 ## Scripts
 
 | Command                | What it does                            |
@@ -120,5 +154,7 @@ so only the owner can create accounts.
 | `npm run format:check` | Check formatting without changing files |
 | `npm run test`         | Run the unit tests once                 |
 | `npm run test:watch`   | Run the unit tests in watch mode        |
+| `npm run db:types`     | Regenerate the database types           |
+| `npm run db:test`      | Run the SQL tests (nothing is saved)    |
 
 Run `npm run lint`, `npm run build`, and `npm run test` before opening a pull request.

@@ -26,6 +26,8 @@ export function useAuth() {
   const profileQuery = useQuery({
     queryKey: profileQueryKey(userId),
     queryFn: userId ? () => getProfile(userId) : skipToken,
+    // Checked again when the app comes back into view, so a turned-off account is noticed.
+    refetchOnWindowFocus: true,
   })
   const profile = profileQuery.data ?? null
 
@@ -46,6 +48,7 @@ export function useAuth() {
   return {
     status,
     session: context.session,
+    sessionEnded: context.sessionEnded,
     profile,
     refetchProfile: profileQuery.refetch,
     logOut,

@@ -6,6 +6,18 @@ import { supabase } from '@/lib/supabase'
 export const WRONG_CREDENTIALS_MESSAGE = 'Wrong username or password.'
 export const INACTIVE_ACCOUNT_MESSAGE =
   'This account is turned off. Please ask the store owner to turn it back on.'
+export const SESSION_ENDED_MESSAGE = 'Your session has ended. Please log in again.'
+
+// Set when the user logs out on purpose, so a session that ends by itself
+// (it expired, or the account was turned off) can show a message instead.
+let logoutRequested = false
+
+/** True once after a logout the user asked for. */
+export function takeLogoutRequested(): boolean {
+  const requested = logoutRequested
+  logoutRequested = false
+  return requested
+}
 
 // Logs in with a username. Inactive accounts are logged out right away.
 export async function logIn(username: string, password: string): Promise<Profile> {
@@ -25,6 +37,7 @@ export async function logIn(username: string, password: string): Promise<Profile
 
   const profile = await getProfile(data.user.id)
   if (!profile.is_active) {
+    logoutRequested = true
     await supabase.auth.signOut()
     throw new Error(INACTIVE_ACCOUNT_MESSAGE)
   }
@@ -33,6 +46,7 @@ export async function logIn(username: string, password: string): Promise<Profile
 }
 
 export async function logOut(): Promise<void> {
+  logoutRequested = true
   const { error } = await supabase.auth.signOut()
   if (error) throw new Error('Could not log out. Please try again.')
 }

@@ -15,7 +15,7 @@ export default function LoginPage() {
   if (status === 'active') return <Navigate to={HOME_PATH} replace />
 
   return (
-    <main className="flex min-h-dvh items-center justify-center bg-background p-4">
+    <main className="flex min-h-dvh items-center justify-center bg-background px-[max(1rem,env(safe-area-inset-left))] pt-[max(1rem,env(safe-area-inset-top))] pb-[max(1rem,env(safe-area-inset-bottom))]">
       <Card className="w-full max-w-sm gap-6 rounded-lg py-8 shadow-none">
         <CardHeader className="justify-items-center gap-3 text-center">
           <img src="/icons/logo.svg" alt="" className="size-12" />

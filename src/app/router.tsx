@@ -1,23 +1,41 @@
+import { Suspense } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router'
+import {
+  InventoryPage,
+  LoginPage,
+  PosPage,
+  ProductsPage,
+  ReportsPage,
+  SettingsPage,
+  ShiftsPage,
+  TransactionsPage,
+  UsersPage,
+} from '@/app/lazyPages'
+import { CrashScreen } from '@/components/common/CrashScreen'
+import { LoadingScreen } from '@/components/common/LoadingScreen'
+import { NotFoundScreen } from '@/components/common/NotFoundScreen'
 import { AppShell } from '@/components/layout/AppShell'
 import { RequireAuth } from '@/features/auth/components/RequireAuth'
-import LoginPage from '@/features/auth/LoginPage'
-import InventoryPage from '@/features/inventory/InventoryPage'
-import PosPage from '@/features/pos/PosPage'
-import ProductsPage from '@/features/products/ProductsPage'
-import ReportsPage from '@/features/reports/ReportsPage'
-import SettingsPage from '@/features/settings/SettingsPage'
-import ShiftsPage from '@/features/shifts/ShiftsPage'
-import TransactionsPage from '@/features/transactions/TransactionsPage'
-import UsersPage from '@/features/users/UsersPage'
+
+// Pages load only when opened (see lazyPages.ts); AppShell shows a loading state meanwhile.
 
 // RequireAuth sends logged-out users to /login and cashiers away from
 // admin-only pages. Which pages are admin-only is set in navItems.ts.
 // The database security rules block the same data even if a page is opened.
+// errorElement shows a "Something went wrong" screen with Reload instead of a blank page.
 export const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
+  {
+    path: '/login',
+    element: (
+      <Suspense fallback={<LoadingScreen />}>
+        <LoginPage />
+      </Suspense>
+    ),
+    errorElement: <CrashScreen />,
+  },
   {
     element: <RequireAuth />,
+    errorElement: <CrashScreen />,
     children: [
       {
         element: <AppShell />,
@@ -31,7 +49,7 @@ export const router = createBrowserRouter([
           { path: 'reports', element: <ReportsPage /> },
           { path: 'users', element: <UsersPage /> },
           { path: 'settings', element: <SettingsPage /> },
-          { path: '*', element: <Navigate to="/pos" replace /> },
+          { path: '*', element: <NotFoundScreen /> },
         ],
       },
     ],

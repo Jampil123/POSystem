@@ -34,7 +34,8 @@ export function TopBar() {
 
   return (
     // Slimmer on phones in landscape to save vertical space (UI guide 5).
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border bg-card px-4 max-md:landscape:h-12 md:h-16 md:px-6">
+    // The top padding keeps it below the iPhone notch when installed on the home screen.
+    <header className="sticky top-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center justify-between gap-3 border-b border-border bg-card pt-[env(safe-area-inset-top)] pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))] max-md:landscape:h-[calc(3rem+env(safe-area-inset-top))] md:h-[calc(4rem+env(safe-area-inset-top))] md:pr-[max(1.5rem,env(safe-area-inset-right))] md:pl-6">
       <div className="flex min-w-0 items-center gap-2">
         <img src="/icons/logo.svg" alt="" className="size-8 md:hidden" />
         <span className="truncate text-lg font-semibold">{current?.label ?? 'Kuya Tata POS'}</span>

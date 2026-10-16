@@ -8,7 +8,8 @@ export function Sidebar() {
   const items = role ? getNavItemsForRole(role) : []
 
   return (
-    <aside className="sticky top-0 hidden h-dvh w-20 shrink-0 flex-col border-r border-border bg-card md:flex xl:w-60">
+    // The left padding keeps the menu clear of the notch on phones in landscape.
+    <aside className="sticky top-0 hidden h-dvh w-[calc(5rem+env(safe-area-inset-left))] shrink-0 flex-col border-r border-border bg-card pt-[env(safe-area-inset-top)] pl-[env(safe-area-inset-left)] md:flex xl:w-[calc(15rem+env(safe-area-inset-left))]">
       <div className="flex h-16 items-center gap-2 border-b border-border px-4 max-xl:justify-center">
         <img src="/icons/logo.svg" alt="" className="size-9" />
         <span className="hidden font-semibold xl:inline">Kuya Tata POS</span>
