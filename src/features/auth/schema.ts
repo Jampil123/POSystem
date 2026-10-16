@@ -1,7 +1,8 @@
 import { z } from 'zod'
+import { USERNAME_PATTERN } from '@functions/_shared/userRules.ts'
 
 // Same rule as the profiles.username check in the database.
-export const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/
+export { USERNAME_PATTERN }
 
 export const loginSchema = z.object({
   username: z

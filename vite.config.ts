@@ -11,15 +11,26 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      // A new version waits until the user taps "Reload" (see UpdatePrompt).
+      registerType: 'prompt',
       // Uses the existing public/manifest.webmanifest instead of generating one
       manifest: false,
       includeAssets: ['icons/*.svg', 'icons/*.png'],
+      workbox: {
+        // The app shell is saved on the device, so it opens without internet
+        // and shows the "No internet connection" screen instead of a browser error.
+        // Data from Supabase is never cached.
+        navigateFallback: 'index.html',
+        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
+        cleanupOutdatedCaches: true,
+      },
     }),
   ],
   resolve: {
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
+      // Code shared with the Supabase Edge Functions (plain TypeScript, no Deno APIs).
+      '@functions': path.resolve(import.meta.dirname, './supabase/functions'),
     },
   },
   test: {

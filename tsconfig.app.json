@@ -7,6 +7,7 @@
     "types": [
       "vite/client",
       "vite-plugin-pwa/client",
+      "vite-plugin-pwa/react",
       "vitest/globals",
       "@testing-library/jest-dom"
     ],
@@ -30,8 +31,11 @@
 
     /* Import alias */
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@functions/*": ["./supabase/functions/*"]
     }
   },
-  "include": ["src", "tests"]
+  // The Edge Function entry files (index.ts) run on Deno and are not checked here;
+  // only the plain TypeScript parts they share with the app are.
+  "include": ["src", "tests", "supabase/functions/_shared", "supabase/functions/*/handler.ts"]
 }
