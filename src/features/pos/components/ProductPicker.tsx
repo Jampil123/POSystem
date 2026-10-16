@@ -206,18 +206,20 @@ function ProductButton({
       type="button"
       disabled={isOut}
       onClick={onAdd}
-      aria-label={`Add ${product.name}`}
+      data-product-id={product.id}
       className={cn(
         // Phone portrait: one row per product with an add button.
         'flex min-h-14 w-full items-center justify-between gap-3 rounded-lg border bg-card p-3 text-left transition-colors',
         // Tablets, desktops, and phones in landscape: product cards.
-        'md:min-h-28 md:flex-col md:items-start max-md:landscape:min-h-24 max-md:landscape:flex-col max-md:landscape:items-start',
+        'md:min-h-28 md:flex-col md:items-start max-md:landscape:flex-col max-md:landscape:items-start short:min-h-20!',
         'focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
         'hover:bg-muted disabled:bg-muted disabled:opacity-60',
         flashing && 'border-primary bg-accent hover:bg-accent',
       )}
     >
       <span className="min-w-0">
+        {/* Screen readers hear "Add <name>, stock, price": the spoken name includes the visible text. */}
+        <span className="sr-only">Add </span>
         <span className="line-clamp-2 font-medium">{product.name}</span>
         <span className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
           <span className="tabular-nums">Stock: {product.stock_qty}</span>

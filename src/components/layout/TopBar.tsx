@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { ChevronDown, CircleUserRound, KeyRound, LogOut } from 'lucide-react'
 import { useLocation } from 'react-router'
 import { toast } from 'sonner'
@@ -12,9 +12,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { SetApprovalPinDialog } from '@/features/auth/components/SetApprovalPinDialog'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 import { ShiftStatus } from '@/features/shifts/components/ShiftStatus'
+
+// Only admins use this dialog, so it is loaded the first time it is opened.
+const SetApprovalPinDialog = lazy(() =>
+  import('@/features/auth/components/SetApprovalPinDialog').then((module) => ({
+    default: module.SetApprovalPinDialog,
+  })),
+)
 
 const roleLabels = { admin: 'Admin', cashier: 'Cashier' } as const
 
@@ -22,6 +28,7 @@ export function TopBar() {
   const { pathname } = useLocation()
   const { profile, logOut } = useAuth()
   const [pinDialogOpen, setPinDialogOpen] = useState(false)
+  const [pinDialogUsed, setPinDialogUsed] = useState(false)
   const current = navItems.find((item) => pathname.startsWith(item.path))
 
   async function handleLogOut() {
@@ -35,7 +42,7 @@ export function TopBar() {
   return (
     // Slimmer on phones in landscape to save vertical space (UI guide 5).
     // The top padding keeps it below the iPhone notch when installed on the home screen.
-    <header className="sticky top-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center justify-between gap-3 border-b border-border bg-card pt-[env(safe-area-inset-top)] pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))] max-md:landscape:h-[calc(3rem+env(safe-area-inset-top))] md:h-[calc(4rem+env(safe-area-inset-top))] md:pr-[max(1.5rem,env(safe-area-inset-right))] md:pl-6">
+    <header className="sticky top-0 z-30 flex h-[calc(3.5rem+env(safe-area-inset-top))] items-center justify-between gap-3 border-b border-border bg-card pt-[env(safe-area-inset-top)] pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))] short:h-[calc(3rem+env(safe-area-inset-top))]! md:h-[calc(4rem+env(safe-area-inset-top))] md:pr-[max(1.5rem,env(safe-area-inset-right))] md:pl-6">
       <div className="flex min-w-0 items-center gap-2">
         <img src="/icons/logo.svg" alt="" className="size-8 md:hidden" />
         <span className="truncate text-lg font-semibold">{current?.label ?? 'Kuya Tata POS'}</span>
@@ -68,7 +75,13 @@ export function TopBar() {
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               {profile.role === 'admin' && (
-                <DropdownMenuItem className="min-h-12" onSelect={() => setPinDialogOpen(true)}>
+                <DropdownMenuItem
+                  className="min-h-12"
+                  onSelect={() => {
+                    setPinDialogUsed(true)
+                    setPinDialogOpen(true)
+                  }}
+                >
                   <KeyRound aria-hidden="true" />
                   Set approval PIN
                 </DropdownMenuItem>
@@ -82,7 +95,11 @@ export function TopBar() {
         )}
       </div>
 
-      <SetApprovalPinDialog open={pinDialogOpen} onOpenChange={setPinDialogOpen} />
+      {pinDialogUsed && (
+        <Suspense fallback={null}>
+          <SetApprovalPinDialog open={pinDialogOpen} onOpenChange={setPinDialogOpen} />
+        </Suspense>
+      )}
     </header>
   )
 }

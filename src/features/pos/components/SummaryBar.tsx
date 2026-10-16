@@ -33,7 +33,7 @@ export function SummaryBar({
   return (
     <div
       className={cn(
-        'flex items-center justify-between gap-3 border bg-card p-3 max-md:landscape:py-1.5',
+        'flex items-center justify-between gap-3 border bg-card p-3 short:py-1.5!',
         fixed
           ? // Above the phone bottom navigation; beside the icon sidebar on tablets,
             // and above the home bar on iPads.
@@ -45,7 +45,7 @@ export function SummaryBar({
         {itemCount} {itemCount === 1 ? 'item' : 'items'} · <CurrencyText amount={total} />
       </p>
       <Button
-        className="h-14 min-w-36 px-6 text-base max-md:landscape:h-12"
+        className="h-14 min-w-36 px-6 text-base short:h-12!"
         disabled={actionDisabled || isSaving}
         onClick={onAction}
       >

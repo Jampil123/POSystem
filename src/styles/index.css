@@ -1,6 +1,9 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+/* Short screens, like phones in landscape (UI guide 5): slimmer header and summary bar. */
+@custom-variant short (@media (max-height: 500px));
+
 /*
  * Kuya Tata POS theme — colors from section 2 of the UI guide.
  * Values are the guide's hex colors so they are easy to compare.

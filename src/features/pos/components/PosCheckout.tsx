@@ -127,7 +127,8 @@ export function PosCheckout() {
 
   const stepContent: Record<PosStep, ReactNode> = {
     items: products.isPending ? (
-      <ListSkeleton rows={6} />
+      // Tall enough that the steps below do not jump when the products appear.
+      <ListSkeleton rows={12} />
     ) : products.isError ? (
       <ErrorState message="Could not load the products." onRetry={() => void products.refetch()} />
     ) : (
