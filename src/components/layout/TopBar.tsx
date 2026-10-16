@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/features/auth/hooks/useAuth'
+import { ShiftStatus } from '@/features/shifts/components/ShiftStatus'
 
 const roleLabels = { admin: 'Admin', cashier: 'Cashier' } as const
 
@@ -29,15 +30,17 @@ export function TopBar() {
   }
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border bg-card px-4 md:h-16 md:px-6">
+    // Slimmer on phones in landscape to save vertical space (UI guide 5).
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b border-border bg-card px-4 max-md:landscape:h-12 md:h-16 md:px-6">
       <div className="flex min-w-0 items-center gap-2">
         <img src="/icons/logo.svg" alt="" className="size-8 md:hidden" />
         <span className="truncate text-lg font-semibold">{current?.label ?? 'Kuya Tata POS'}</span>
       </div>
 
       <div className="flex items-center gap-3 text-sm">
-        {/* Placeholder: real shift status comes in Phase 4 */}
-        <span className="hidden text-muted-foreground sm:inline">No open shift</span>
+        <span className="hidden sm:inline">
+          <ShiftStatus />
+        </span>
 
         {profile && (
           <DropdownMenu>
