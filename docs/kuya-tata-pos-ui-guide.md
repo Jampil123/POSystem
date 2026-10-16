@@ -148,8 +148,9 @@ Touch rules for tablets and phones:
 - Tablets and desktops: the two panels side by side. Phones: the brand panel on top (logo and
   welcome only), the form below. Short screens (phones in landscape): smaller logo, no step tiles.
 - Error message in red below the form for wrong credentials.
-- The detailed logo is used on the login page only; the app keeps the small "KT" mark in the
-  sidebar, top bar, and app icons, where the full logo would be too small to read.
+- The same round logo is used everywhere the store mark appears: the sidebar, the phone top bar, the
+  browser tab icon, and the home-screen app icons (on a yellow square; the Android maskable icon keeps
+  the logo inside the safe zone). Small places use `public/brand/kuya-tata-logo-96.png`.
 
 ### 6.2 Open shift
 
