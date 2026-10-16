@@ -427,6 +427,52 @@ begin
       else format('FAIL: result %s, status %s', v_result, v_status)
     end;
 
+    -- Admin account rules ---------------------------------------------------
+
+    -- Test 17: an admin cannot demote their own account
+    perform set_config(
+      'request.jwt.claims',
+      jsonb_build_object('sub', v_admin_id, 'role', 'authenticated')::text,
+      true
+    );
+    v_error := null;
+    begin
+      update public.profiles set role = 'cashier' where id = v_admin_id;
+    exception when others then
+      v_error := sqlerrm;
+    end;
+    select role::text into v_status from public.profiles where id = v_admin_id;
+
+    v_tests := v_tests || 'an admin cannot demote their own account'::text;
+    v_results := v_results || case
+      when v_error ilike '%your own account%' and v_status = 'admin' then 'PASS'
+      else format('FAIL: error was "%s", role is %s', coalesce(v_error, 'none'), v_status)
+    end;
+
+    -- Test 18: the last active admin cannot be deactivated.
+    -- Every other admin is turned off here (undone at the end), so the test admin is the last one.
+    update public.profiles set is_active = false
+    where role = 'admin' and is_active and id <> v_admin_id;
+
+    perform set_config(
+      'request.jwt.claims',
+      jsonb_build_object('sub', v_user_id, 'role', 'authenticated')::text,
+      true
+    );
+    v_error := null;
+    begin
+      update public.profiles set is_active = false where id = v_admin_id;
+    exception when others then
+      v_error := sqlerrm;
+    end;
+    select is_active::text into v_status from public.profiles where id = v_admin_id;
+
+    v_tests := v_tests || 'the last active admin cannot be deactivated'::text;
+    v_results := v_results || case
+      when v_error ilike '%last active admin%' and v_status = 'true' then 'PASS'
+      else format('FAIL: error was "%s", active is %s', coalesce(v_error, 'none'), v_status)
+    end;
+
     raise exception 'test rollback';
   exception when others then
     -- Any other error means the test setup itself failed; show it.

@@ -491,8 +491,10 @@ export type Database = {
         Row: {
           address: string
           contact_no: string
+          default_low_stock_level: number
           id: number
           receipt_footer: string
+          receipt_paper_width: number
           store_name: string
           updated_at: string
           vat_enabled: boolean
@@ -501,8 +503,10 @@ export type Database = {
         Insert: {
           address?: string
           contact_no?: string
+          default_low_stock_level?: number
           id?: number
           receipt_footer?: string
+          receipt_paper_width?: number
           store_name?: string
           updated_at?: string
           vat_enabled?: boolean
@@ -511,8 +515,10 @@ export type Database = {
         Update: {
           address?: string
           contact_no?: string
+          default_low_stock_level?: number
           id?: number
           receipt_footer?: string
+          receipt_paper_width?: number
           store_name?: string
           updated_at?: string
           vat_enabled?: boolean
