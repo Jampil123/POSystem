@@ -19,11 +19,16 @@ export function useCurrentShift() {
   })
 }
 
+// Opening or closing a shift swaps the form on screen (open form <-> close form).
+// The reload is started but not waited for, so the form's own success message
+// runs before the form is replaced (otherwise the message is skipped).
 export function useOpenShift() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (startingCash: number) => openShift(startingCash),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: shiftKeys.all }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: shiftKeys.all })
+    },
   })
 }
 
@@ -40,7 +45,9 @@ export function useCloseShift() {
   return useMutation({
     mutationFn: ({ shiftId, actualCash }: { shiftId: number; actualCash: number }) =>
       closeShift(shiftId, actualCash),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: shiftKeys.all }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: shiftKeys.all })
+    },
   })
 }
 

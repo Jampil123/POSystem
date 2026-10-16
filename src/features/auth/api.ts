@@ -29,6 +29,8 @@ export async function logIn(username: string, password: string): Promise<Profile
   if (error) {
     // invalid_credentials covers both an unknown username and a wrong password.
     if (error.code === 'invalid_credentials') throw new Error(WRONG_CREDENTIALS_MESSAGE)
+    // Turned-off accounts are also blocked by Supabase Auth (see the admin-users function).
+    if (error.code === 'user_banned') throw new Error(INACTIVE_ACCOUNT_MESSAGE)
     if (error.code === 'email_not_confirmed') {
       throw new Error('This account is not set up yet. Please ask the store owner.')
     }
